@@ -7,12 +7,77 @@
     tools:context="br.ufc.quixada.qdetective.views.MainActivity">
 
     <TextView
+        android:id="@+id/textView"
+        android:layout_width="126dp"
+        android:layout_height="32dp"
+        android:text="Categoria"
+        android:textSize="20dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        tools:layout_editor_absoluteX="125dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <Spinner
+        android:id="@+id/categorySpinner"
+        android:layout_width="348dp"
+        android:layout_height="54dp"
+        tools:layout_editor_absoluteX="18dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:text="Data"
+        android:textSize="20dp"
+        tools:layout_editor_absoluteX="172dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/button2"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/categorySpinner" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="353dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.533"
+        app:layout_constraintLeft_toLeftOf="@+id/categorySpinner"
+        app:layout_constraintRight_toRightOf="@+id/categorySpinner"
+        tools:layout_editor_absoluteY="212dp" />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="342dp"
+        android:layout_height="87dp"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        tools:layout_editor_absoluteX="17dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Descrição"
+        android:textSize="20dp"
+        tools:layout_editor_absoluteX="154dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/button2" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="348dp"
+        android:layout_height="56dp"
+        android:text="Denunciar"
+        tools:layout_editor_absoluteX="10dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/editText2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginBottom="8dp" />
 
 </android.support.constraint.ConstraintLayout>
