@@ -51,7 +51,11 @@ public class MainActivity extends Activity implements DatePickerFragment.DatePic
         Denuncia denuncia = new Denuncia();
         denuncia.setData(data);
         denuncia.setDescricao(descricao.getText().toString());
-        
+        Denuncia.Categoria categoria = Denuncia.Categoria.VIAS_PUBLICAS;
+        categoria.setValor(this.categorySpinner.getSelectedItemPosition());
+        denuncia.setCategoria(categoria);
+        intent.putExtra("denuncia",denuncia);
+        startActivity(intent);
     }
 
     public void dataButtonClicked(View view){

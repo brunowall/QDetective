@@ -1,12 +1,26 @@
 package br.ufc.quixada.qdetective.models;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by darkbyte on 23/11/17.
  */
 
-public class Denuncia {
+public class Denuncia implements Serializable{
+    public enum Categoria{ VIAS_PUBLICAS(0), EQUIPAMENTOS_COMUNITARIOS(1),LIMPEZA_SANEAMENTO(2);
+        private  int valor;
+        Categoria(int valor){
+            this.valor=valor;
+        }
+        public int getValor() {
+            return valor;
+        }
+
+        public void setValor(int valor){
+            this.valor = valor;
+        }
+    };
 
     private Integer id;
     private String descricao;
