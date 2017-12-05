@@ -1,24 +1,24 @@
 package br.ufc.quixada.qdetective.views;
 
-import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
-import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import br.ufc.quixada.qdetective.R;
 import br.ufc.quixada.qdetective.models.Denuncia;
+import br.ufc.quixada.qdetective.views.DatePickerFragment;
+import br.ufc.quixada.qdetective.views.FotoVideoActivity;
 
-public class MainActivity extends Activity implements DatePickerFragment.DatePickerListener{
+public class MainActivity extends AppCompatActivity implements DatePickerFragment.DatePickerListener {
+
     private EditText descricao;
     private Spinner categorySpinner;
     private Button dataButton;
@@ -28,16 +28,16 @@ public class MainActivity extends Activity implements DatePickerFragment.DatePic
         super.onCreate(savedInstanceState);
         data = new Date();
         setContentView(R.layout.activity_main);
-        this.descricao = findViewById(R.id.description);
-        this.dataButton = findViewById(R.id.dataButton);
-        this.categorySpinner = findViewById(R.id.categorySpinner);
+        this.descricao = (EditText)findViewById(R.id.description);
+        this.dataButton =(Button) findViewById(R.id.dataButton);
+        this.categorySpinner =(Spinner) findViewById(R.id.categorySpinner);
         Calendar calendar = Calendar.getInstance();
         int dia =  calendar.get(Calendar.DAY_OF_MONTH);
         int mes = calendar.get(Calendar.MONTH);
         int ano = calendar.get(Calendar.YEAR);
         this.dataButton.setText(makeData(dia,mes,ano));
         String []values  = new String[]{"Vias públicas de acesso","Equipamentos comunitários","Limpeza urbana e saneamento"};
-        ArrayAdapter<String>adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,values);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,values);
         categorySpinner.setAdapter(adapter);
     }
 
