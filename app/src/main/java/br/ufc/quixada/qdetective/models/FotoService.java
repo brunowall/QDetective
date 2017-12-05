@@ -2,6 +2,7 @@ package br.ufc.quixada.qdetective.models;
 
 import android.Manifest;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 
@@ -15,6 +16,7 @@ public class FotoService {
     private Context context;
     private boolean possuiCartao;
     private boolean suportaCartao;
+    private Uri mediaUri;
     public FotoService(Context context){
         this.context = context;
         possuiCartao = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
@@ -27,6 +29,11 @@ public class FotoService {
         boolean camera = ActivityCompat.checkSelfPermission(context,CAMERA) == PERMISSION_GRANTED;
         boolean read = ActivityCompat.checkSelfPermission(context,READ) == PERMISSION_GRANTED;
         boolean write = ActivityCompat.checkSelfPermission(context,WRITE)==PERMISSION_GRANTED;
+
+    }
+
+    public void capturaFoto(){
         
     }
+
 }
