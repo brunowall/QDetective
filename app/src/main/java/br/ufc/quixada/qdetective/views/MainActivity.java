@@ -14,8 +14,6 @@ import java.util.Date;
 
 import br.ufc.quixada.qdetective.R;
 import br.ufc.quixada.qdetective.models.Denuncia;
-import br.ufc.quixada.qdetective.views.DatePickerFragment;
-import br.ufc.quixada.qdetective.views.FotoVideoActivity;
 
 public class MainActivity extends AppCompatActivity implements DatePickerFragment.DatePickerListener {
 
@@ -23,6 +21,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
     private Spinner categorySpinner;
     private Button dataButton;
     private Date data;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,4 +71,5 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
         calendar.set(Calendar.DAY_OF_MONTH,dia);
         data.setTime(calendar.getTimeInMillis());
     }
+
 }
