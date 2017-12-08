@@ -9,12 +9,20 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.json.JSONObject;
 
 import java.io.File;
 
 import br.ufc.quixada.qdetective.R;
+import br.ufc.quixada.qdetective.models.Denuncia;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -28,6 +36,7 @@ public class FotoVideoActivity extends Activity {
     boolean suportaCartao;
     private final int CAPTURAR_IMAGEM = 1;
     private Uri uri;
+    private Denuncia denuncia;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,12 +46,18 @@ public class FotoVideoActivity extends Activity {
     }
 
     public void tirarFotoClicked(View view){
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT,this.getPathSalvamento());
-        startActivityForResult(intent,CAPTURAR_IMAGEM);
-
+        if(android.os.Build.VERSION.SDK_INT >= 23){
+            getPermissoes();
+        }else {
+            capturarFoto();
+        }
     }
-
+    public void capturarFoto(){
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        this.uri = this.getPathSalvamento();
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+        startActivityForResult(intent, CAPTURAR_IMAGEM);
+    }
 
     protected void getPermissoes(){
         String CAMERA = Manifest.permission.CAMERA;
@@ -58,6 +73,15 @@ public class FotoVideoActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode==CAPTURAR_IMAGEM && resultCode==RESULT_OK){
+            String denuncia = getIntent().getExtras().getString("denuncia");
+
+            this.denuncia = new Gson().fromJson(denuncia,Denuncia.class);
+            this.denuncia.setUriMidia(uri.toString());
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -79,5 +103,10 @@ public class FotoVideoActivity extends Activity {
         File arquivo = new File(diretorio,nomearq);
         uri = Uri.fromFile(arquivo);
         return uri;
+    }
+    public void continueClick(View view){
+        Intent intent = new Intent(this,MapaActivity.class);
+        intent.putExtra("denuncia",new Gson().toJson(this.denuncia));
+        startActivity(intent);
     }
 }

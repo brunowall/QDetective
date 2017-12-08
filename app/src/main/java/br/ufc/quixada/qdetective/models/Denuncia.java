@@ -8,19 +8,6 @@ import java.util.Date;
  */
 
 public class Denuncia implements Serializable{
-    public enum Categoria{ VIAS_PUBLICAS(0), EQUIPAMENTOS_COMUNITARIOS(1),LIMPEZA_SANEAMENTO(2);
-        private  int valor;
-        Categoria(int valor){
-            this.valor=valor;
-        }
-        public int getValor() {
-            return valor;
-        }
-
-        public void setValor(int valor){
-            this.valor = valor;
-        }
-    };
 
     private Integer id;
     private String descricao;
@@ -29,7 +16,7 @@ public class Denuncia implements Serializable{
     private Double latitude;
     private String uriMidia;
     private String usuario;
-    private Enum categoria;
+    private String categoria;
 
     public Integer getId() {
         return id;
@@ -46,7 +33,6 @@ public class Denuncia implements Serializable{
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
-
     public Date getData() {
         return data;
     }
@@ -87,11 +73,11 @@ public class Denuncia implements Serializable{
         this.usuario = usuario;
     }
 
-    public Enum getCategoria() {
+    public String getCategoria() {
         return categoria;
     }
 
-    public void setCategoria(Enum categoria) {
+    public void setCategoria(String categoria) {
         this.categoria = categoria;
     }
 }

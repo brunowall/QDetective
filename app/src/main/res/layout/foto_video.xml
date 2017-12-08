@@ -19,4 +19,15 @@
         android:layout_below="@id/botaoTirarFoto"
 
         />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="70dp"
+        android:text="Continuar"
+        android:textSize="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:onClick="continueClick"
+        />
+
 </RelativeLayout>

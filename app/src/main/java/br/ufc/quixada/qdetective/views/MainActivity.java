@@ -9,6 +9,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -44,17 +50,16 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
         return dia+"/"+(mes+1)+"/"+ano;
     }
 
-    public void continueClik(View view){
+    public void continueClick(View view) throws JSONException {
         Intent intent = new Intent(this,FotoVideoActivity.class);
         Bundle bundle = new Bundle();
         Denuncia denuncia = new Denuncia();
         denuncia.setData(data);
         denuncia.setDescricao(descricao.getText().toString());
-        Denuncia.Categoria categoria = Denuncia.Categoria.VIAS_PUBLICAS;
-        categoria.setValor(this.categorySpinner.getSelectedItemPosition());
-        denuncia.setCategoria(categoria);
-        intent.putExtra("denuncia",denuncia);
+        denuncia.setCategoria(categorySpinner.getSelectedItem().toString());
+        intent.putExtra("denuncia", new Gson().toJson(denuncia,Denuncia.class));
         startActivity(intent);
+
     }
 
     public void dataButtonClicked(View view){
@@ -64,12 +69,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
     }
 
     @Override
-    public void datePickerChosed(String datpicker, int dia, int mes, int ano) {
+    public void datePickerChosed(int dia, int mes, int ano) {
         Calendar calendar =  Calendar.getInstance();
         calendar.set(Calendar.MONTH,mes);
         calendar.set(Calendar.YEAR,ano);
         calendar.set(Calendar.DAY_OF_MONTH,dia);
+        this.dataButton.setText(dia+"/"+(mes+1)+"/"+ano);
         data.setTime(calendar.getTimeInMillis());
     }
+
 
 }

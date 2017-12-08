@@ -16,7 +16,7 @@ import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment {
     public interface DatePickerListener {
-            public void datePickerChosed(String datpicker,int dia, int mes,int ano);
+            public void datePickerChosed(int dia, int mes,int ano);
     }
     private DatePickerListener listener;
 
@@ -26,12 +26,10 @@ public class DatePickerFragment extends DialogFragment {
         int dia = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         int mes = Calendar.getInstance().get(Calendar.MONTH);
         int ano = Calendar.getInstance().get(Calendar.YEAR);
-        final String botao = (String) this.getActivity().getIntent().getExtras().getString("botaodata");
-
         final DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                    DatePickerFragment.this.listener.datePickerChosed(botao,i2,i1,i);
+                    DatePickerFragment.this.listener.datePickerChosed(i2,i1,i);
             }
         };
         DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(),listener,ano,mes,dia);
