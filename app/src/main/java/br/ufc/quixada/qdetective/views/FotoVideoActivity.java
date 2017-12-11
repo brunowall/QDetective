@@ -2,7 +2,12 @@ package br.ufc.quixada.qdetective.views;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,6 +26,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 
+import br.ufc.quixada.qdetective.Persistence.DenunciaDao;
 import br.ufc.quixada.qdetective.R;
 import br.ufc.quixada.qdetective.models.Denuncia;
 
@@ -35,14 +41,21 @@ public class FotoVideoActivity extends Activity {
     boolean possuiCartao;
     boolean suportaCartao;
     private final int CAPTURAR_IMAGEM = 1;
+    private final int CAPTURAR_VIDEO = 2;
     private Uri uri;
     private Denuncia denuncia;
+    private LocationManager locationManager;
+    private double latitude;
+    private double longitude;
+    private DenunciaDao dao;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.foto_video);
         possuiCartao = Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
         suportaCartao = Environment.isExternalStorageRemovable();
+        dao = new DenunciaDao(this);
+        getLocationManager();
     }
 
     public void tirarFotoClicked(View view){
@@ -54,10 +67,11 @@ public class FotoVideoActivity extends Activity {
     }
     public void capturarFoto(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        this.uri = this.getPathSalvamento();
+        this.uri = this.getPathSalvamento(".jpg");
         intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
         startActivityForResult(intent, CAPTURAR_IMAGEM);
     }
+
 
     protected void getPermissoes(){
         String CAMERA = Manifest.permission.CAMERA;
@@ -67,17 +81,19 @@ public class FotoVideoActivity extends Activity {
         boolean read = ActivityCompat.checkSelfPermission(this,READ) == PERMISSION_GRANTED;
         boolean write = ActivityCompat.checkSelfPermission(this,WRITE)==PERMISSION_GRANTED;
         if(camera && read && write){
-             tirarFotoClicked(null);
+             capturarFoto();
+
         }else{
+
             ActivityCompat.requestPermissions(this,new String[]{CAMERA,READ,WRITE},1);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode==CAPTURAR_IMAGEM && resultCode==RESULT_OK){
+        if(resultCode==RESULT_OK){
             String denuncia = getIntent().getExtras().getString("denuncia");
-
+            Log.e("onActivityResult: ",denuncia );
             this.denuncia = new Gson().fromJson(denuncia,Denuncia.class);
             this.denuncia.setUriMidia(uri.toString());
         }
@@ -85,17 +101,63 @@ public class FotoVideoActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       super.onRequestPermissionsResult(requestCode,permissions,grantResults);
         if(requestCode == 1){
-            if(grantResults[0]==PERMISSION_GRANTED && grantResults [1]==PERMISSION_GRANTED && grantResults[2]==PERMISSION_GRANTED){
-                tirarFotoClicked(null);
+            if(grantResults[0]==PackageManager.PERMISSION_GRANTED && grantResults [1]==PackageManager.PERMISSION_GRANTED && grantResults[2]==PackageManager.PERMISSION_GRANTED){
+                capturarFoto();
             }else{
-                Toast.makeText(this,"O aplicativo não possui as permissoes necessárias",Toast.LENGTH_SHORT);
+                Log.e("Result: ","testes");
+                Toast.makeText(this,"O aplicativo não possui as permissoes necessárias",Toast.LENGTH_SHORT).show();
             }
+
         }
     }
 
-    private Uri getPathSalvamento(){
-        String nomearq = System.currentTimeMillis()+".jpg";
+
+    public void getLocationManager(){
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if(ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.INTERNET},
+                    2);
+
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                FotoVideoActivity.this.latitude = location.getLatitude();
+                FotoVideoActivity.this.longitude = location.getLongitude();
+
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
+            }
+        });
+
+    }
+   public void gravarVideoClick(View view){
+       Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+       this.uri = this.getPathSalvamento(".mp4");
+       intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+       startActivityForResult(intent, 2);
+    }
+    private Uri getPathSalvamento(String formato){
+        String nomearq = System.currentTimeMillis()+formato;
         File diretorio = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         if(possuiCartao && suportaCartao){
             diretorio =  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -104,9 +166,11 @@ public class FotoVideoActivity extends Activity {
         uri = Uri.fromFile(arquivo);
         return uri;
     }
+
+
     public void continueClick(View view){
-        Intent intent = new Intent(this,MapaActivity.class);
-        intent.putExtra("denuncia",new Gson().toJson(this.denuncia));
-        startActivity(intent);
+        this.denuncia.setLongitude(this.longitude);
+        this.denuncia.setLatitude(this.latitude);
+        this.dao.addDenuncia(denuncia);
     }
 }

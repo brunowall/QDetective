@@ -2,27 +2,40 @@ package br.ufc.quixada.qdetective.models;
 
 import java.io.Serializable;
 import java.util.Date;
+import com.google.gson.annotations.SerializedName;
+
 
 /**
  * Created by darkbyte on 23/11/17.
  */
 
+
+
 public class Denuncia implements Serializable{
 
-    private Integer id;
+    private Long id;
     private String descricao;
     private Date data;
     private Double longitude;
     private Double latitude;
     private String uriMidia;
     private String usuario;
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
     private String categoria;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -73,11 +86,4 @@ public class Denuncia implements Serializable{
         this.usuario = usuario;
     }
 
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
 }

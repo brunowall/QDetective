@@ -18,7 +18,7 @@ public class PersistenceHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL("create table denuncia(id INTEGER PRIMARY KEY AUTOINCREMENT,descricao Text, data DATE, latitude REAL,longitude REAL,uri TEXT,usuario Text,categoria INTEGER)");
+        sqLiteDatabase.execSQL("create table denuncia(id INTEGER PRIMARY KEY AUTOINCREMENT,descricao Text, data DATE, latitude REAL,longitude REAL,uri TEXT,usuario Text,categoria TEXT)");
     }
 
     @Override

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:id="@+id/criarDenuncia"
+        android:onClick="criarDenuncia"
+        android:layout_alignParentLeft="true"
+        android:text="Criar denuncia"
+        />
+
+    <Button
+        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:id="@+id/ver_denuncias"
+        android:onClick="verDenuncias"
+        android:layout_alignParentRight="true"
+        android:text="Ver denuncias"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
+        android:text="Denuncias não sincronizadas"
+        android:layout_below="@+id/ver_denuncias"
+        android:layout_alignRight="@id/ver_denuncias"
+        android:layout_alignLeft="@id/criarDenuncia"
+        android:onClick="verDenunciasLocais"
+        />
+
+</RelativeLayout>

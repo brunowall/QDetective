@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Digite seu nome de usuario"
+        android:textSize="25dp"
+        android:id="@+id/labelUsuario"
+        />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/labelUsuario"
+        android:id="@+id/editTextUsuario"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/editTextUsuario"
+        android:text="Entrar"
+        android:onClick="entrar"
+        />
+
+</RelativeLayout>

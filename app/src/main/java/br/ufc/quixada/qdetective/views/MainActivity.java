@@ -56,10 +56,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
         Denuncia denuncia = new Denuncia();
         denuncia.setData(data);
         denuncia.setDescricao(descricao.getText().toString());
+        denuncia.setUsuario(getIntent().getExtras().getString("usuario"));
         denuncia.setCategoria(categorySpinner.getSelectedItem().toString());
         intent.putExtra("denuncia", new Gson().toJson(denuncia,Denuncia.class));
         startActivity(intent);
-
     }
 
     public void dataButtonClicked(View view){

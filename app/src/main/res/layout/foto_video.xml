@@ -17,7 +17,7 @@
         android:id="@+id/botaoGravarVideo"
         android:layout_marginTop="40dp"
         android:layout_below="@id/botaoTirarFoto"
-
+        android:onClick="gravarVideoClick"
         />
 
     <Button
