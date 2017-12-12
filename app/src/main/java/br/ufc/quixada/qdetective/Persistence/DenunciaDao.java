@@ -24,7 +24,15 @@ public class DenunciaDao {
 
     public void addDenuncia(Denuncia denuncia){
         database = persistenceHelper.getWritableDatabase();
-        database.insert("denuncia",null,getValues(denuncia));
+        Cursor cursor = database.rawQuery("SELECT * FROM denuncia WHERE id= ?", new String[] { String.valueOf(denuncia.getId())});
+        if(cursor.getCount()==0){
+            database.insert("denuncia",null,getValues(denuncia));
+
+        }
+        else{
+            database.update("denuncia",this.getValues(denuncia),"id=?",new String[] { String.valueOf(denuncia.getId())});
+        }
+
         database.close();
     }
 
@@ -35,7 +43,6 @@ public class DenunciaDao {
         List<Denuncia> result = new LinkedList<Denuncia>();
         while (cursor.moveToNext()){
             result.add(buildDenuncia(cursor));
-
         }
         cursor.close();
         database.close();
@@ -67,6 +74,7 @@ public class DenunciaDao {
         contentValues.put("categoria",denuncia.getCategoria());
         contentValues.put("usuario",denuncia.getUsuario());
         contentValues.put("data",denuncia.getData().getTime());
+
         return contentValues;
     }
 
@@ -74,5 +82,15 @@ public class DenunciaDao {
         this.database = this.persistenceHelper.getWritableDatabase();
         database.delete("denuncia","id=?",new String[]{String.valueOf(id)});
         this.database.close();
+    }
+
+    public Denuncia getDenunciaByID(long id){
+        this.database = this.persistenceHelper.getWritableDatabase();
+        Cursor cursor = this.database.rawQuery("select * from denuncia where id=?",new String[]{String.valueOf(id)});
+        Denuncia denuncia = null;
+        while(cursor.moveToNext()){
+            denuncia = buildDenuncia(cursor);
+        }
+        return denuncia;
     }
 }

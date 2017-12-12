@@ -3,6 +3,7 @@ package br.ufc.quixada.qdetective.views;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -15,9 +16,11 @@ import com.google.gson.JsonObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import br.ufc.quixada.qdetective.Persistence.DenunciaDao;
 import br.ufc.quixada.qdetective.R;
 import br.ufc.quixada.qdetective.models.Denuncia;
 
@@ -27,11 +30,15 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
     private Spinner categorySpinner;
     private Button dataButton;
     private Date data;
-
+    Denuncia denuncia;
+    private DenunciaDao dao;
+    private boolean update;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         data = new Date();
+
+        dao = new DenunciaDao(this);
         setContentView(R.layout.activity_main);
         this.descricao = (EditText)findViewById(R.id.description);
         this.dataButton =(Button) findViewById(R.id.dataButton);
@@ -44,6 +51,14 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
         String []values  = new String[]{"Vias públicas de acesso","Equipamentos comunitários","Limpeza urbana e saneamento"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,values);
         categorySpinner.setAdapter(adapter);
+        if(getIntent().getExtras()!=null && getIntent().getExtras().get("denuncia")!=null){
+            this.denuncia = (Denuncia)  getIntent().getExtras().get("denuncia");
+            buildScreenByDenuncia(this.denuncia);
+            update = true;
+        }else{
+            this.denuncia = new Denuncia();
+            update = false;
+        }
     }
 
     private String makeData(int dia, int mes, int ano){
@@ -52,14 +67,15 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
 
     public void continueClick(View view) throws JSONException {
         Intent intent = new Intent(this,FotoVideoActivity.class);
-        Bundle bundle = new Bundle();
-        Denuncia denuncia = new Denuncia();
         denuncia.setData(data);
         denuncia.setDescricao(descricao.getText().toString());
-        denuncia.setUsuario(getIntent().getExtras().getString("usuario"));
         denuncia.setCategoria(categorySpinner.getSelectedItem().toString());
-        intent.putExtra("denuncia", new Gson().toJson(denuncia,Denuncia.class));
+        if(!this.update){
+            denuncia.setUsuario(getIntent().getExtras().getString("usuario"));
+        }
+        intent.putExtra("denuncia",this.denuncia);
         startActivity(intent);
+        this.finish();
     }
 
     public void dataButtonClicked(View view){
@@ -78,5 +94,20 @@ public class MainActivity extends AppCompatActivity implements DatePickerFragmen
         data.setTime(calendar.getTimeInMillis());
     }
 
+    private void buildScreenByDenuncia(Denuncia denuncia){
+        this.descricao.setText(denuncia.getDescricao());
+        this.data = denuncia.getData();
+        SimpleDateFormat sfd = new SimpleDateFormat("dd/MM/yyyyy");
+        this.dataButton.setText(sfd.format(denuncia.getData()));
+        String categoria = denuncia.getCategoria();
+        for(int i = 0;i<categorySpinner.getCount(); i++){
+            if(categorySpinner.getItemAtPosition(i).toString().equals(categoria)){
+                this.categorySpinner.setSelection(i);
+                break;
+            }
+        }
+
+
+    }
 
 }

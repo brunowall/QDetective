@@ -2,6 +2,7 @@ package br.ufc.quixada.qdetective.views;
 
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import java.text.SimpleDateFormat;
 
 import br.ufc.quixada.qdetective.R;
 import br.ufc.quixada.qdetective.models.Denuncia;
+import br.ufc.quixada.qdetective.services.DenunciaServiceWeb;
 
 /**
  * Created by darkbyte on 11/12/17.
@@ -35,6 +37,7 @@ public class DetalheActivity extends AppCompatActivity {
     RelativeLayout relativeLayout;
     private String urlBase = "http://maps.googleapis.com/maps/api/staticmap" +
             "?size=400x400&sensor=true&markers=color:red|%s,%s";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,4 +78,6 @@ public class DetalheActivity extends AppCompatActivity {
             return;
         }
     }
+
+
 }

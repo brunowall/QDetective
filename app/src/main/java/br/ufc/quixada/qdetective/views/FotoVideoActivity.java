@@ -55,6 +55,7 @@ public class FotoVideoActivity extends Activity {
         possuiCartao = Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
         suportaCartao = Environment.isExternalStorageRemovable();
         dao = new DenunciaDao(this);
+        this.denuncia =(Denuncia)getIntent().getExtras().get("denuncia");
         getLocationManager();
     }
 
@@ -67,7 +68,7 @@ public class FotoVideoActivity extends Activity {
     }
     public void capturarFoto(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        this.uri = this.getPathSalvamento(".jpg");
+        this.getPathSalvamento(".jpg");
         intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
         startActivityForResult(intent, CAPTURAR_IMAGEM);
     }
@@ -82,9 +83,7 @@ public class FotoVideoActivity extends Activity {
         boolean write = ActivityCompat.checkSelfPermission(this,WRITE)==PERMISSION_GRANTED;
         if(camera && read && write){
              capturarFoto();
-
         }else{
-
             ActivityCompat.requestPermissions(this,new String[]{CAMERA,READ,WRITE},1);
         }
     }
@@ -92,9 +91,7 @@ public class FotoVideoActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode==RESULT_OK){
-            String denuncia = getIntent().getExtras().getString("denuncia");
-            Log.e("onActivityResult: ",denuncia );
-            this.denuncia = new Gson().fromJson(denuncia,Denuncia.class);
+
             this.denuncia.setUriMidia(uri.toString());
         }
     }
@@ -106,7 +103,6 @@ public class FotoVideoActivity extends Activity {
             if(grantResults[0]==PackageManager.PERMISSION_GRANTED && grantResults [1]==PackageManager.PERMISSION_GRANTED && grantResults[2]==PackageManager.PERMISSION_GRANTED){
                 capturarFoto();
             }else{
-                Log.e("Result: ","testes");
                 Toast.makeText(this,"O aplicativo não possui as permissoes necessárias",Toast.LENGTH_SHORT).show();
             }
 
@@ -152,11 +148,12 @@ public class FotoVideoActivity extends Activity {
     }
    public void gravarVideoClick(View view){
        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-       this.uri = this.getPathSalvamento(".mp4");
+       this.getPathSalvamento(".mp4");
        intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+       intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT,10);
        startActivityForResult(intent, 2);
     }
-    private Uri getPathSalvamento(String formato){
+    private void getPathSalvamento(String formato){
         String nomearq = System.currentTimeMillis()+formato;
         File diretorio = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         if(possuiCartao && suportaCartao){
@@ -164,7 +161,7 @@ public class FotoVideoActivity extends Activity {
         }
         File arquivo = new File(diretorio,nomearq);
         uri = Uri.fromFile(arquivo);
-        return uri;
+
     }
 
 
@@ -172,5 +169,7 @@ public class FotoVideoActivity extends Activity {
         this.denuncia.setLongitude(this.longitude);
         this.denuncia.setLatitude(this.latitude);
         this.dao.addDenuncia(denuncia);
+        Toast.makeText(this, "Denuncia adicionada com sucesso", Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

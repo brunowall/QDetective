@@ -2,18 +2,25 @@ package br.ufc.quixada.qdetective.views;
 
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.IOException;
+
 import br.ufc.quixada.qdetective.Persistence.DenunciaDao;
 import br.ufc.quixada.qdetective.R;
 import br.ufc.quixada.qdetective.models.Denuncia;
+import br.ufc.quixada.qdetective.services.DenunciaServiceWeb;
 
 /**
  * Created by darkbyte on 10/12/17.
@@ -24,6 +31,7 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
     private DenunciaDao dao;
     private int itemclicked;
     private AdapterPersonalizado adp;
+    String url = "http://35.193.98.124/QDetective/";
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +49,7 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 DialogFragment dialog =  new OptionsDialog();
+                ShowDenuncias.this.itemclicked = i;
                 dialog.show(ShowDenuncias.this.getFragmentManager(),"Options");
             }
         });
@@ -49,15 +58,26 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
 
     @Override
     public void onClickEditar() {
+        Intent intent = new Intent(this,MainActivity.class);
+        Denuncia denuncia = (Denuncia)listView.getItemAtPosition(itemclicked);
+        Denuncia denuncia1 = dao.getDenunciaByID(denuncia.getId());
+        intent.putExtra("denuncia",denuncia);
+        startActivityForResult(intent,1);
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode==1 && resultCode == RESULT_OK){
+            this.finish();
+            startActivity(this.getIntent());
+        }
     }
 
     @Override
     public void onClickRemover() {
         RemoveConfirmDialog rcd = new RemoveConfirmDialog();
         rcd.show(this.getFragmentManager(),"Confirmação");
-        this.listView.invalidateViews();
-        this.listView.refreshDrawableState();
+
     }
 
     @Override
@@ -70,18 +90,55 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
 
     @Override
     public void onClickCompartilhar() {
-
+        UploadJson uploadJson = new UploadJson();
+        uploadJson.execute((Denuncia)listView.getItemAtPosition(itemclicked));
     }
 
     @Override
     public void onClickSim() {
         Denuncia denuncia = (Denuncia) listView.getItemAtPosition(itemclicked);
         this.dao.removeDenuncia(denuncia.getId());
-        this.adp.notifyDataSetChanged();
+        this.finish();
+        startActivity(getIntent());
     }
 
     @Override
     public void onClickNao() {
         return;
     }
+
+    private class UploadJson extends AsyncTask<Denuncia, Void, DenunciaServiceWeb>
+
+    {   @Override
+    protected void onPreExecute(){
+
+    }
+
+        @Override
+        protected DenunciaServiceWeb doInBackground(Denuncia... denuncias) {
+            DenunciaServiceWeb denunciaServiceWeb = new DenunciaServiceWeb();
+            String envio = ShowDenuncias.this.url+"denuncias";
+            Denuncia denuncia = denuncias[0];
+            try {
+                if(denunciaServiceWeb.sendDenuncia(envio,denuncia)){
+                    String urlData = ShowDenuncias.this.url+"postFotoBase64";
+                    denunciaServiceWeb.sendMidiaToserver(urlData,getDiretorioDeSalvamento(denuncia.getUriMidia()));
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return denunciaServiceWeb;
+        }
+    }
+    private File getDiretorioDeSalvamento(String nomeArquivo) {
+        if (nomeArquivo.contains("/")) {
+            int beginIndex = nomeArquivo.lastIndexOf("/") + 1;
+            nomeArquivo = nomeArquivo.substring(beginIndex);
+        }
+        File diretorio = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File pathDaImagem = new File(diretorio, nomeArquivo);
+        return pathDaImagem;
+    }
+
 }
