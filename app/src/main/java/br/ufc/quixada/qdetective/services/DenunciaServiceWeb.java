@@ -44,70 +44,122 @@ import br.ufc.quixada.qdetective.models.Denuncia;
 
 public class DenunciaServiceWeb {
     private ArrayList<Denuncia> denuncias;
+    private String respostaServidor;
 
-    public boolean sendDenuncia(String url,Denuncia denuncia) throws IOException {
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.setPrettyPrinting().create();
-        String json = gson.toJson(denuncia);
-        URL api = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection)api.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(dos, "UTF-8"));
-        writer.write(json.toString());
-        writer.close();
-        if(connection.getResponseCode()<HttpURLConnection.HTTP_BAD_REQUEST){
+    public boolean sendDenuncia(String url, Denuncia denuncia) {
+        String retorno = null;
+        try {
+            GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(Date.class, new DateTypeAdapter());
+            Gson gson = builder.setPrettyPrinting().create();
+            String jsonObject = gson.toJson(denuncia);
+
+            URL apiUrl = new URL(url);
+            HttpURLConnection conexao = (HttpURLConnection) apiUrl.openConnection();
+            conexao.setDoOutput(true);
+            conexao.setRequestMethod("POST");
+            conexao.setRequestProperty("Content-Type", "application/json");
+            conexao.connect();
+
+            DataOutputStream wr = new DataOutputStream(conexao.getOutputStream());
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(wr, "UTF-8"));
+            writer.write(jsonObject.toString());
+            writer.close();
+            wr.flush();
+            wr.close();
+            int codigoResposta = conexao.getResponseCode();
+            InputStream is = null;
+            if (codigoResposta < HttpURLConnection.HTTP_BAD_REQUEST) {
+                is = conexao.getInputStream();
+                respostaServidor = converterInputStreamToString(is);
+            } else {
+                is = conexao.getErrorStream();
+                respostaServidor = "Verifique a URL de conexão com o servidor. Erro: " + codigoResposta;
+            }
+            is.close();
+            conexao.disconnect();
             return true;
-        }else{
-            return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            respostaServidor = "Erro ao estabelecer conexão com o servidor.";
         }
+        return false;
     }
 
     public boolean sendMidiaToserver(String url,File file) throws IOException {
-        byte[]bytearray = loadFile(file);
-        String encoded = Base64.encodeToString(bytearray,Base64.DEFAULT);
-        HashMap<String, String> params = new HashMap<>();
-        String nomearquivo = file.getName();
-        if(file.getName().contains("/")){
-            int index= nomearquivo.lastIndexOf("/");
-            nomearquivo = nomearquivo.substring(index);
-        }
-        params.put("fileName", nomearquivo);
-        params.put("base64", encoded);
-        URL servidor = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) servidor.openConnection();
-        connection.setDoOutput(true);
-        connection.setInstanceFollowRedirects(false);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setRequestProperty("charset", "UTF-8");
-        connection.setRequestProperty("Content-Length", Integer.toString(getPostDataString(params).length()));
-        connection.setUseCaches(false);
-        connection.connect();
-        DataOutputStream dr = new DataOutputStream(connection.getOutputStream());
-        dr.write(getPostDataString(params).getBytes());
-        InputStream is = null;
-        dr.flush();
-        dr.close();
-        String respostaServidor = null;
-        int codigoResposta = connection.getResponseCode();
-        if (codigoResposta < HttpURLConnection.HTTP_BAD_REQUEST) {
-            is = connection.getInputStream();
-            respostaServidor = converterInputStreamToString(is);
-        } else {
-            is = connection.getErrorStream();
-            respostaServidor = "Verifique a URL de conexão com o servidor. Erro: " + codigoResposta;
-        }
-        if(respostaServidor.contains("OK!")){
+        try {
+            byte[] byteArray = loadFile(file);
+            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            HashMap<String, String> parametros = new HashMap<>();
+
+            String nomeArquivo = file.getName();
+            if (file.getName().contains("/")) {
+                int beginIndex = file.getName().lastIndexOf("/") + 1;
+                nomeArquivo = file.getName().substring(beginIndex);
+            }
+            parametros.put("fileName", nomeArquivo);
+            parametros.put("base64", encoded);
+
+
+            URL apiUrl = new URL(url);
+            HttpURLConnection conexao = (HttpURLConnection) apiUrl.openConnection();
+            conexao.setDoOutput(true);
+            conexao.setInstanceFollowRedirects(false);
+            conexao.setRequestMethod("POST");
+            conexao.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conexao.setRequestProperty("charset", "UTF-8");
+            conexao.setRequestProperty("Content-Length", Integer.toString(getPostDataString(parametros).length()));
+            conexao.setUseCaches(false);
+            conexao.connect();
+
+            try (DataOutputStream wr = new DataOutputStream(conexao.getOutputStream())) {
+                wr.write(getPostDataString(parametros).getBytes());
+                wr.flush();
+                wr.close();
+            }
+            int codigoResposta = conexao.getResponseCode();
+            InputStream is = null;
+            if (codigoResposta < HttpURLConnection.HTTP_BAD_REQUEST) {
+                is = conexao.getInputStream();
+            } else {
+                is = conexao.getErrorStream();
+                respostaServidor = "Resposta inválida do servidor.";
+            }
+            String resposta = converterInputStreamToString(is);
+            if (resposta.contains("OK")) {
+                respostaServidor = "Arquivo enviado com sucesso.";
+            } else {
+                respostaServidor = "Erro ao enviar arquivo para servidor.";
+            }
+            is.close();
+            conexao.disconnect();
             return true;
-        }else{
-            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            respostaServidor = "Erro ao estabelecer conexão com o servidor.";
         }
+        return false;
+    }
+
+    private byte[] loadFile(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        long length = file.length();
+        byte[] bytes = new byte[(int) length];
+
+        int offset = 0;
+        int numRead = 0;
+        while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            offset += numRead;
+        }
+        is.close();
+        return bytes;
 
     }
 
+    public String getRespostaServidor() {
+        return respostaServidor;
+    }
 
     public String converterInputStreamToString(InputStream is) throws IOException {
         StringBuffer sb = new StringBuffer();
@@ -137,18 +189,28 @@ public class DenunciaServiceWeb {
         return result.toString();
     }
 
-    private byte[] loadFile(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        byte [] bin = new byte[(int) file.length()];
-
-        int offset = 0;
-        int numRead = 0;
-        while (offset < bin.length && (numRead = is.read(bin, offset, bin.length - offset)) >= 0) {
-            offset += numRead;
+    public List<Denuncia> getListaDenunciaJson(String url, String path, String id) {
+        String uri = url + path + "/" + id;
+        String json = getJSONFromAPI(uri);
+        if (!json.isEmpty()) {
+            try {
+                GsonBuilder b = new GsonBuilder().registerTypeAdapter(Date.class, new DateTypeAdapter());
+                Gson gson = b.create();
+                Denuncia[] contato = gson.fromJson(json, Denuncia[].class);
+                denuncias = new ArrayList<>(Arrays.asList(contato));
+                respostaServidor = "Download realizado com sucesso.";
+            } catch (Exception e) {
+                e.printStackTrace();
+                respostaServidor = "Erro ao processar JSON do servidor.";
+            }
         }
+        return this.denuncias;
 
-        is.close();
-        return bin;
+    }
+
+
+    public ArrayList<Denuncia> getDenuncias() {
+        return denuncias;
     }
 
     public String downloadMidiaBase64(String url, String pathSalvamento, long id) {
@@ -165,23 +227,6 @@ public class DenunciaServiceWeb {
 
         }
         return null;
-    }
-
-    public List<Denuncia> getListaDenunciasJson(String url, String path, String id) {
-
-        String uri = url + path + "/" + id;
-        String json = getJSONFromAPI(uri);
-        if (!json.isEmpty()) {
-            try {
-                GsonBuilder b = new GsonBuilder().registerTypeAdapter(Date.class, new DateTypeAdapter());
-                Gson gson = b.create();
-                Denuncia[] contato = gson.fromJson(json, Denuncia[].class);
-                denuncias = new ArrayList<>(Arrays.asList(contato));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return denuncias;
     }
 
     private String getJSONFromAPI(String url) {
@@ -201,11 +246,13 @@ public class DenunciaServiceWeb {
                 retorno = converterInputStreamToString(is);
             } else {
                 is = conexao.getErrorStream();
+                respostaServidor = "Verifique a URL de conexão com o servidor. Erro: " + codigoResposta;
             }
             is.close();
             conexao.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
+            respostaServidor = "Erro ao estabelecer conexão com o servidor.";
         }
         return retorno;
     }

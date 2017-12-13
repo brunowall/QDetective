@@ -165,6 +165,7 @@ public class FotoVideoActivity extends Activity {
     }
 
 
+
     public void continueClick(View view){
         this.denuncia.setLongitude(this.longitude);
         this.denuncia.setLatitude(this.latitude);

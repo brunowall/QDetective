@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -31,6 +32,8 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
     private DenunciaDao dao;
     private int itemclicked;
     private AdapterPersonalizado adp;
+    private Denuncia auxiliar;
+    private boolean retorno;
     String url = "http://35.193.98.124/QDetective/";
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,6 +95,7 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
     public void onClickCompartilhar() {
         UploadJson uploadJson = new UploadJson();
         uploadJson.execute((Denuncia)listView.getItemAtPosition(itemclicked));
+        this.auxiliar = (Denuncia) listView.getItemAtPosition(itemclicked);
     }
 
     @Override
@@ -107,7 +111,7 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
         return;
     }
 
-    private class UploadJson extends AsyncTask<Denuncia, Void, DenunciaServiceWeb>
+    private class UploadJson extends AsyncTask<Denuncia, Void,DenunciaServiceWeb>
 
     {   @Override
     protected void onPreExecute(){
@@ -117,18 +121,26 @@ public class ShowDenuncias extends AppCompatActivity implements OptionsDialog.Op
         @Override
         protected DenunciaServiceWeb doInBackground(Denuncia... denuncias) {
             DenunciaServiceWeb denunciaServiceWeb = new DenunciaServiceWeb();
-            String envio = ShowDenuncias.this.url+"denuncias";
+            String envio = ShowDenuncias.this.url+"rest/denuncias";
             Denuncia denuncia = denuncias[0];
             try {
                 if(denunciaServiceWeb.sendDenuncia(envio,denuncia)){
-                    String urlData = ShowDenuncias.this.url+"postFotoBase64";
-                    denunciaServiceWeb.sendMidiaToserver(urlData,getDiretorioDeSalvamento(denuncia.getUriMidia()));
+                    String urlData = ShowDenuncias.this.url+"rest/arquivos/postFotoBase64";
+                  if(denunciaServiceWeb.sendMidiaToserver(urlData,getDiretorioDeSalvamento(denuncia.getUriMidia()))){
+                      Log.e("doInBackground: ",denunciaServiceWeb.getRespostaServidor());
+                      ShowDenuncias.this.dao.removeDenuncia(ShowDenuncias.this.auxiliar.getId());
+                      ShowDenuncias.this.finish();
+                      ShowDenuncias.this.startActivity(ShowDenuncias.this.getIntent());
+
+                  }else{
+                      Toast.makeText(ShowDenuncias.this, "Erro ao enviar os dados para o servidor", Toast.LENGTH_SHORT).show();
+                  }
 
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return denunciaServiceWeb;
+          return denunciaServiceWeb;
         }
     }
     private File getDiretorioDeSalvamento(String nomeArquivo) {
